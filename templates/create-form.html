@@ -1,0 +1,39 @@
+
+{% block content %}
+<h1>Create form</h1>
+
+
+
+<form method="POST">
+    {{ form.hidden_tag() }}
+
+    {{ form.question_name.label(class="form-label") }}
+
+    {{ form.question_name(class="form-control") }}
+    <br/>
+
+    {{ form.question_type.label(class="form-label") }}
+
+    {{ form.question_type(class="form-control") }}
+    <br/>
+    {{ form.required.label(class="form-label") }}
+
+    {{ form.required(class="form-control") }}
+    <br/>
+    {{ form.image_link.label(class="form-label") }}
+
+    {{ form.image_link(class="form-control") }}
+    <br/>
+    {{ form.question_layout.label(class="form-label") }}
+
+    {{ form.question_layout(class="form-control") }}
+    <br/>
+
+    
+    <br/>
+
+    {{ form.submit(class="btn btn-secondary") }}
+
+
+</form>
+{%endblock%}
