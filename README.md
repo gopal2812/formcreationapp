@@ -1,7 +1,24 @@
-# formcreationapp
-formcreationapp
+# Form Creation App
+Formcreationapp
 # CAPSTONE PROJECT: Make a TypeForm Clone using Flask
-```
+
+## Features
+1. Unique ID to each Form.
+2. Test creator can choose to use different kind of questions in the forms viz mcq, fill in the blanks, picture forms etc.
+3. Unique authentication and user signup mechanism.
+4. Test are stored in Json Format and can be shared in json format.
+5. Forms can be shared in link in jsonformat
+
+
+## Installation
+
+```bash
+pip install -r requirements.txt
+
+
+## Usage
+$export FLASK_APP=Form.py
+$flask run
 $ flask routes
 Endpoint       Methods    Rule
 -------------  ---------  -----------------------
@@ -86,5 +103,4 @@ The repository will be regularly updated to include changes. <br/>
 4. If the input text is all CAPS, it is rendered as is else the first letter is capitalized and rendered. <br/>
 5. The errors generated in the input text are catched inside flask template and shown to user for quick correction.<br/>
 
-### Task achieved
-Able to dump the  diferent type of form and questions to json data. Json dump of the form can be share with the link.
+
