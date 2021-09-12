@@ -1,13 +1,38 @@
-# formcreationapp
-formcreationapp
+# Form Creation App
+Formcreationapp
 # CAPSTONE PROJECT: Make a TypeForm Clone using Flask
-```
+
+## Features
+1. Unique ID to each Form.
+2. Test creator can choose to use different kind of questions in the forms viz mcq, fill in the blanks, picture forms etc.
+3. Unique authentication and user signup mechanism.
+4. Test are stored in Json Format and can be shared in json format.
+5. Forms can be shared in link in jsonformat
+
+
+## Installation
+
+```bash
+pip install -r requirements.txt
+
+
+## Usage
+$export FLASK_APP=Form.py
+$flask run
 $ flask routes
 Endpoint       Methods    Rule
 -------------  ---------  -----------------------
 add_user       GET, POST  /user/add
+create_FIOB    GET, POST  /forms/fiob
+create_FITB    GET, POST  /forms/fitb
+create_dd      GET, POST  /forms/dd
 create_form    GET, POST  /forms/create
+create_likert  GET, POST  /forms/likert
+create_ma      GET, POST  /forms/ma
 create_mcq     GET, POST  /forms/create-mcq
+create_pma     GET, POST  /forms/pma
+create_pmcq    GET, POST  /forms/pmcq
+create_upload  GET, POST  /forms/upload
 dashboard      GET, POST  /dashboard
 delete         GET        /delete/<int:id>
 edit_form      GET        /forms/edit/<hash>
@@ -77,3 +102,5 @@ The repository will be regularly updated to include changes. <br/>
 	(iii) Input text length should not exceed 50 characters.<br/>
 4. If the input text is all CAPS, it is rendered as is else the first letter is capitalized and rendered. <br/>
 5. The errors generated in the input text are catched inside flask template and shown to user for quick correction.<br/>
+
+
