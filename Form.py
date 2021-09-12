@@ -3,6 +3,7 @@ import time
 import re
 import glob
 import json
+from types import LambdaType
 from flask import Flask, render_template, flash, request
 from flask.helpers import url_for
 from flask_wtf import FlaskForm
@@ -95,8 +96,8 @@ class NamerForm(FlaskForm):
     submit = SubmitField("Submit")
 
 class QuestionForm(FlaskForm):
-	question_name=StringField("Please write the question to be asked in Form",validators=[DataRequired()])
-	question_type=SelectField("Choose the question Type?",choices=[
+        question_name=StringField("Please write the question to be asked in Form",validators=[DataRequired()])
+        question_type=SelectField("Choose the question Type?",choices=[
     ("mcq", "Multiple Choice Questions"),
     ("MulAns", "Multiple Answers"),
     ("PhoNum", "Phone Number"),
@@ -115,12 +116,13 @@ class QuestionForm(FlaskForm):
     ("fitbs", "Fill in the blanks"),
     ("drpdwn", "Dropdown"),
     ("wbst", "Website")])
-	required=BooleanField('Required Question',validators=[DataRequired()])
-	image_link=StringField('Image URL',validators=[URL()])
-	question_layout=RadioField('Layout',choices=[('above','Image above question'),('side','Image on the side of the question')])
-	# if question_type=="mcq":
-	# 	name=StringField('hi')
-	submit=SubmitField("Submit")
+        image_link=StringField('Image URL',validators=[URL()])
+        question_layout=SelectField('Select the image Layout',choices=[('above','Image above question'),('side','Image on the side of the question')])
+        submit=SubmitField("Submit")
+
+class CreateForm(FlaskForm):
+        total_marks=IntegerField("Total marks for the test",validators=[DataRequired()])
+        total_time=IntegerField('Duration limit of the test',validators=[DataRequired()])
 
 class ProductForm(FlaskForm):
     choice_1 = StringField('Choice 1')
@@ -129,13 +131,65 @@ class ProductForm(FlaskForm):
     choice_4 = StringField('Choice 4')
 
 class MCQForm(FlaskForm):
-	choices=FieldList(StringField('Choice'),label="Answer choices",min_entries=4,max_entries=4)
-	correct_choice=IntegerField('Correct choice index',validators=[DataRequired()])
-	submit=SubmitField('Submit')
+        choices=FieldList(StringField('Choice'),label="Answer choices",min_entries=4,max_entries=4)
+        correct_choice=IntegerField('Correct choice index',validators=[DataRequired()])
+        submit=SubmitField('Submit')
+
+#class OneMoreQuestion(FlaskForm):
+#        yesonemore=BooleanField('Add one more question?')
+#        submit=SubmitField("Submit")
 
 class OneMoreQuestion(FlaskForm):
-	yesonemore=BooleanField('Add one more question?')
-	submit=SubmitField("Submit")
+        yesonemore = RadioField('Add one more question?', choices = [(True, 'Add more question'),
+                                                                     (False, 'Complete the Form')])
+        submit = SubmitField("Submit")
+
+class MultipleAnswer(FlaskForm):
+        choices=FieldList(StringField(label='Choice',validators=[DataRequired()]),
+                      label='Choices',min_entries=4, max_entries=4)
+        correct_choices=IntegerField('Correct choice index number', validators=[DataRequired()])
+        submit=SubmitField("Submit")
+
+class PictureMCQForm(FlaskForm):
+        choices=FieldList(StringField('Choice'), label="test", min_entries=4, max_entries=4)
+        correct_choice=IntegerField('Correct choice index number', validators=[DataRequired()])
+        image_link=StringField(label='IMAGE URL', validators=[DataRequired(),URL(),
+                                                              lambda x:x.endswith(('png','jpeg','jpg'))])
+        question_layout=RadioField('Layout ', choices=[('above','Image above question'), ('side','Image on the side of the question')])
+        submit=SubmitField('Submit')
+
+class PictureMultipleChoicesForm(FlaskForm):
+        choices=FieldList(StringField(label='Choice', validators=[DataRequired()]),label='Choices',min_entries=4,max_entries=4)
+        correct_choices=IntegerField('Correct choice index',validators=[DataRequired()])
+        image_link=StringField(label='IMAGE URL', validators=[DataRequired(), URL(), lambda x:x.endswith(('png','jpeg','jpg'))])
+        question_layout=RadioField('Layout ', choices=[('above','Image above question'), ('side','Image on the side of the question')])
+        submit=SubmitField('Submit')
+
+class LikertForm(FlaskForm):
+        choices=FieldList(StringField(label='Likert option', validators=[DataRequired()]),label='Choices',min_entries=4,max_entries=4)
+        rating_choices=FieldList(StringField(label='Choice', validators=[DataRequired()]),label='Rating strings',min_entries=4,max_entries=4)
+        submit=SubmitField('Submit')
+
+class FillInOneBlank(FlaskForm):
+        sentence=StringField("What is the sentence? (Please indicate the blank with a series of underscores)",validators=[DataRequired()])
+        blank=StringField("What is the correct blank/answer?", validators=[DataRequired()])
+        submit=SubmitField("Submit")
+
+class FillinTheBlanks(FlaskForm):
+        sentence=StringField("What is the sentence? (Please indicate the blank with two consecutive '$' signs)",validators=[DataRequired()])
+        blank=FieldList(StringField("What is the correct blank/answer according to the order?",
+                                    validators=[DataRequired()]), label="Blanks", min_entries=5, max_entries=7)
+        submit=SubmitField('Submit')
+
+class Dropdown(FlaskForm):
+        choices=FieldList(StringField(label='Choice', validators=[DataRequired()]),
+                          label='Dropdown choices', min_entries=4,max_entries=4)
+        correct_choice=IntegerField('Correct choice index number',validators=[DataRequired()])
+        submit=SubmitField('Submit')
+
+class FileUpload(FlaskForm):
+        FileNameShouldEndWith=StringField(label='What is the file extension required to be?', validators=[DataRequired()])
+        submit=SubmitField("Submit")
 
 class FormName(FlaskForm):
     yesonemore = StringField("What is the name of the form?", validators=[DataRequired()])
@@ -165,20 +219,20 @@ def login():
 #forms edit
 @app.route("/forms/edit/<hash>")
 def edit_form(hash):
-	try:
-		with open(f"forms/{hash}.json",encoding='utf-8') as filequiz:
-			return "\n".join(filequiz.readlines())
-	except OSError:
-		return "An error occurred with the file name passed"
+        try:
+                with open(f"forms/{hash}.json",encoding='utf-8') as filequiz:
+                        return "\n".join(filequiz.readlines())
+        except OSError:
+                return "An error occurred with the file name passed"
 
 #form hash
 @app.route("/forms/<hash>")
 def form(hash):
-	try:
-		with open(f"forms/{hash}.json",encoding='utf-8') as filequiz:
-			return "\n".join(filequiz.readlines())
-	except OSError:
-		return "An error occurred with the file name passed"
+        try:
+                with open(f"forms/{hash}.json",encoding='utf-8') as filequiz:
+                        return "\n".join(filequiz.readlines())
+        except OSError:
+                return "An error occurred with the file name passed"
 
 # Create logout page
 @app.route('/logout',methods=['GET','POST'])
@@ -190,51 +244,199 @@ def logout():
 
 @app.route("/forms/create",methods=['GET','POST'])
 def create_form():
-	form=QuestionForm()
-	if form.validate_on_submit():
-		global details_dict
-		details_dict=form.data
-		if form.question_type.data=="mcq":
-			return redirect("/forms/create-mcq")
-	return render_template('create-form.html', form=form)
+        form=QuestionForm()
+        if form.validate_on_submit():
+                global details_dict
+                details_dict=form.data
+                if form.question_type.data=="mcq":
+                    return redirect("/forms/create-mcq")
+                elif form.question_type.data == "mulans":
+                    return redirect("/forms/ma")
+                elif form.question_type.data == "PMCQ":
+                    return redirect("/forms/pmcq")
+                elif form.question_type.data == "PMA":
+                    return redirect("/forms/pma")
+                elif form.question_type.data == "Lkrt":
+                    return redirect("/forms/likert")
+                elif form.question_type.data == "fitb":
+                    return redirect("/forms/fiob")
+                elif form.question_type.data == "fitbs":
+                    return redirect("/forms/fitb")
+                elif form.question_type.data == "drpdwn":
+                    return redirect("/forms/drpdwn")
+                elif form.question_type.data == "upl":
+                    return redirect("/forms/upl")
+                else:
+                    return redirect('/forms/create-new')
+        return render_template('create-form.html', form=form)
 
 @app.route("/forms/create-mcq",methods=['GET','POST'])
 def create_mcq():
-	try:
-		if not details_dict:
-			return redirect("/dashboard")
-	except:
-		return redirect("/dashboard")
-	choiceform=MCQForm()
-	if choiceform.validate_on_submit():
-		correct=choiceform.correct_choice.data-1
-		choices=choiceform.choices.data
-		choices=[x for x in choices if x.strip()]
-		if correct>len(choices):
-			flash("Correct choice not within bounds")
-			choiceform.correct_choice.data=None
-		elif len(choices)==1:
-			flash("Only one unique choice exists!")
-		else:
-			details_dict.update({'choices':choices,'correct':correct})
-			return redirect('/forms/create-new')
-	return render_template('mcq.html',form=choiceform)
+        choiceform=MCQForm()
+        if choiceform.validate_on_submit():
+                correct=choiceform.correct_choice.data-1
+                choices=choiceform.choices.data
+                choices=[x for x in choices if x.strip()]
+                if correct>len(choices):
+                        flash("Correct choice not within bounds")
+                        choiceform.correct_choice.data=None
+                elif len(choices)==1:
+                        flash("Only one unique choice exists!")
+                else:
+                        details_dict.update({'choices':choices,'correct':correct})
+                        return redirect('/forms/create-new')
+        return render_template('mcq.html',form=choiceform)
+
+@app.route("/forms/ma",methods=['GET','POST'])
+def create_ma():
+        global details_dict
+        choiceform=MultipleAnswer()
+        if choiceform.validate_on_submit():
+                correct_choices=choiceform.correct_choices.entries
+                choices=choiceform.choices.data
+                choices=[x for x in choices if x.strip()]
+                if len(choices)==0 or len(choices)==1:
+                        flash("Please enter more than one unique choice.")
+                if len(correct_choices)>len(choices):
+                        flash("There are more correct choices than the choices!")
+                else:
+                        details_dict.update({'choices':choices,'correct':correct_choices})
+                        return redirect('/forms/create-new')
+        return render_template('MA.html',form=choiceform)
+
+@app.route("/forms/pmcq",methods=['GET','POST'])
+def create_pmcq():
+        global details_dict
+        choiceform=PictureMCQForm()
+        if choiceform.validate_on_submit():
+                correct=choiceform.correct_choice.data-1
+                choices=choiceform.choices.data
+                imagelink=choiceform.image_link.data
+                layout=choiceform.question_layout.data
+                choices=[x for x in choices if x.strip()]
+                if correct>len(choices):
+                        flash("Correct choice not within bounds")
+                elif len(choices)==1:
+                        flash("Only one unique choice exists!")
+                else:
+                        details_dict.update({'choices':choices,'correct':correct,'image_link':imagelink,'layout':layout})
+                        return redirect('/forms/create-new')
+        return render_template('mcq.html',form=choiceform)
+
+@app.route("/forms/pma",methods=['GET','POST'])
+def create_pma():
+        global details_dict
+        choiceform=PictureMultipleChoicesForm()
+        if choiceform.validate_on_submit():
+                correct_choices=choiceform.correct_choices.entries
+                choices=choiceform.choices.data
+                image_link=choiceform.image_link.data
+                layout=choiceform.question_layout.data
+                choices=[x for x in choices if x.strip()]
+                if len(choices)==0 or len(choices)==1:
+                        flash("Please enter more than one unique choice.")
+                if len(correct_choices)>len(choices):
+                        flash("There are more correct choices than the choices!")
+                else:
+                        details_dict.update({'choices':choices,'correct':correct_choices,'image_link':image_link,'layout':layout})
+                        return redirect('/forms/create-new')
+        return render_template('PMA.html',form=choiceform)
+
+@app.route('/forms/likert',methods=['GET','POST'])
+def create_likert():
+        global details_dict
+        choiceform=LikertForm()
+        if choiceform.validate_on_submit():
+                choices=choiceform.choices.data
+                rating_choices=choiceform.rating_choices.data
+                choices=[x for x in choices if x.strip()]
+                details_dict.update({'choices':choices,'rating_choices':rating_choices})
+                return redirect('/forms/create-new')
+        return render_template('likert.html',form=choiceform)
+
+@app.route('/forms/fiob',methods=['GET','POST'])
+def create_FIOB():
+        global details_dict
+        choiceform=FillInOneBlank()
+        if choiceform.validate_on_submit():
+                sentence=choiceform.sentence.data
+                blank=choiceform.blank.data
+                if "$$" not in sentence:
+                        flash("There is no blank present in the sentence")
+                elif sentence.count("$$")>1:
+                        flash("Only one blank is needed!")
+                details_dict.update({'sentence':sentence,'blank':blank})
+                return redirect('/forms/create-new')
+        return render_template('FIOB.html',form=choiceform)
+
+@app.route('/forms/fitb',methods=['GET','POST'])
+def create_FITB():
+        choiceform=FillinTheBlanks()
+        if choiceform.validate_on_submit():
+                sentence=choiceform.sentence.data
+                blank=choiceform.blank.data
+                if "$$" not in sentence:
+                        flash("There is no blank present in the sentence")
+                elif len(blank)!=sentence.count("$$"):
+                        flash("Something is wrong with the number of blanks or sentence")
+                details_dict.update({'sentence':sentence,'blank':blank})
+                return redirect('/forms/create-new')
+        return render_template('FIOB.html',form=choiceform)
+
+@app.route('/forms/dd',methods=['GET','POST'])
+def create_dd():
+        choiceform=Dropdown()
+        if choiceform.validate_on_submit():
+                rawchoices=choiceform.choices.data
+                choices=[]
+                for choice in rawchoices:
+                        if choice not in choices:
+                                choices.append(choice.strip())
+                correct_choice=choiceform.correct_choice.data-1
+                if correct_choice>len(choices):
+                        flash("You've entered an incorrect index for the correct choice")
+                elif correct_choice<0:
+                        flash("Positive indexes only.")
+                details_dict.update({'choices':choices,'correct':correct_choice})
+                return redirect('/forms/create-new')
+        return render_template('MCQ.html',form=choiceform)
+
+@app.route('/forms/upload',methods=['GET','POST'])
+def create_upload():
+        global logged_in_as
+        try:
+                if not logged_in_as:
+                        return redirect("/")
+                try:details_dict
+                except NameError:return redirect("/")
+        except:
+                return redirect("/")
+        choiceform=FileUpload()
+        if choiceform.validate_on_submit():
+                file_ext=choiceform.FileNameShouldEndWith.data
+                file_ext=file_ext.split()
+                details_dict.update({'file_ext':file_ext})
+                return redirect('/forms/create-new')
+        return render_template('FIOB.html',form=choiceform)
 
 @app.route("/forms/create-new", methods=['GET', 'POST'])
 def next_question():
     global q_list
+    global details_dict
     try:
         if q_list:
             pass
     except:
-        q_list = []
+       q_list = []
 
     OneMore = OneMoreQuestion()
     if OneMore.is_submitted():
-        print("ji")
         q_list.append(details_dict)
         print(details_dict)
-        if OneMore.yesonemore.data == True:
+        #print("hi")
+        #print(strOneMore.yesonemore.data)
+        if OneMore.yesonemore.data == 'True':
+            print("redirect to create" + str(OneMore.yesonemore.data))
             return redirect('/forms/create')
         else:
             return redirect("/forms/name-setter")
@@ -243,16 +445,22 @@ def next_question():
 
 @app.route('/forms/name-setter',methods=['GET','POST'])
 def nameform():
-	nameform=FormName()
-	if nameform.validate_on_submit():
-		details_dict['name']=nameform.yesonemore.data
-		if os.path.isfile(details_dict['name']):
-			flash("That name has already been used")
-		else:
-			with open(f"forms/{details_dict['name']}.json","w") as file:
-				json.dump(q_list,file)
-			return redirect("/dashboard")
-	return render_template("namesetter.html",form=nameform)
+    nameform = FormName()
+    if nameform.validate_on_submit():
+        global details_dict
+        global q_list
+        details_dict.update({'name': nameform.yesonemore.data})
+        if os.path.isfile(f"forms/{nameform.yesonemore.data}.json"):
+            flash("That name has already been used")
+        else:
+            with open(f"forms/{details_dict['name']}.json", "w") as file:
+                json.dump(q_list, file)
+                q_list = []
+                details_dict = {}
+                print("redirection dashboard stuck %s", file)
+                #return redirect("/")
+                return redirect(url_for('dashboard'))
+    return render_template("namesetter.html", form=nameform)
 
 
 # Create dashboard page

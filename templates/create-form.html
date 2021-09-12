@@ -1,5 +1,7 @@
-
+{% extends 'base.html' %}
+{% block title %}{{ title }}{% endblock %}
 {% block content %}
+<div class="container">
 <h1>Create form</h1>
 
 
@@ -15,10 +17,6 @@
     {{ form.question_type.label(class="form-label") }}
 
     {{ form.question_type(class="form-control") }}
-    <br/>
-    {{ form.required.label(class="form-label") }}
-
-    {{ form.required(class="form-control") }}
     <br/>
     {{ form.image_link.label(class="form-label") }}
 
@@ -36,4 +34,5 @@
 
 
 </form>
-{%endblock%}
+</div>
+    {%endblock%}

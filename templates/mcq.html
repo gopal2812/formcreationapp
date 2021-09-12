@@ -4,7 +4,7 @@
 {% for message in get_flashed_messages() %}
 	
 	<div class="alert alert-warning alert-dismissible fade show" role="alert">
-	  {{ message }}
+	  <h1> {{  message }} </h1>
 	  <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
 	</div>
 
@@ -14,13 +14,10 @@
 <form method="POST">
     <div class="shadow-none p-3 mb-5 bg-light rounded">
     {{ form.hidden_tag() }}
-
-    {{ form.choices.label(class="form-label") }}
-
-    {{ form.choices(class="form-control") }}
-    <br/>
-    {{form.correct_choice.label(class="form-label")}}
-    {{ form.correct_choice(class="form-control") }}
+        <h4> {{ form.choices.label(class="form-label") }} </h4>
+        <h3> {{ form.choices(class="form-control") }} </h3>
+        <h5> {{form.correct_choice.label(class="form-label")}} </h5>
+        <h3> {{ form.correct_choice(class="form-control") }} </h3>
     {{ form.submit(class="btn btn-secondary") }}
     </div>
 </form>
