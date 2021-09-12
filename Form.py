@@ -98,24 +98,13 @@ class NamerForm(FlaskForm):
 class QuestionForm(FlaskForm):
         question_name=StringField("Please write the question to be asked in Form",validators=[DataRequired()])
         question_type=SelectField("Choose the question Type?",choices=[
-    ("mcq", "Multiple Choice Questions"),
-    ("MulAns", "Multiple Answers"),
-    ("PhoNum", "Phone Number"),
-    ("SText", "Short Text"),
-    ("LText", "Long Text"),
-    ("PMCQ", "Picture Multiple Choice Questions"),
-    ("PMA", "Picture Multiple Answers"),
-    ("stmt", "Statement"),
-    ("bool", "Yes/No"),
-    ("email", "Email"),
-    ("Lkrt", "Likert"),
-    ("Rtg", "Rating"),
-    ("date", "Date"),
-    ("int", "Number"),
-    ("fitb", "Fill in the blank"),
-    ("fitbs", "Fill in the blanks"),
-    ("drpdwn", "Dropdown"),
-    ("wbst", "Website")])
+                                                                        ("mcq", "Multiple Choice Questions"),
+                                                                        ("MulAns", "Multiple Answers"),
+                                                                        ("PMCQ", "Picture Multiple Choice Questions"),
+                                                                        ("PMA", "Picture Multiple Answers"),
+                                                                        ("Lkrt", "Likert"),
+                                                                        ("fitb", "Fill in the blank"),
+                                                                        ("fitbs", "Multiple Fill in the blanks")])
         image_link=StringField('Image URL',validators=[URL()])
         question_layout=SelectField('Select the image Layout',choices=[('above','Image above question'),('side','Image on the side of the question')])
         submit=SubmitField("Submit")
@@ -135,10 +124,6 @@ class MCQForm(FlaskForm):
         correct_choice=IntegerField('Correct choice index',validators=[DataRequired()])
         submit=SubmitField('Submit')
 
-#class OneMoreQuestion(FlaskForm):
-#        yesonemore=BooleanField('Add one more question?')
-#        submit=SubmitField("Submit")
-
 class OneMoreQuestion(FlaskForm):
         yesonemore = RadioField('Add one more question?', choices = [(True, 'Add more question'),
                                                                      (False, 'Complete the Form')])
@@ -153,15 +138,14 @@ class MultipleAnswer(FlaskForm):
 class PictureMCQForm(FlaskForm):
         choices=FieldList(StringField('Choice'), label="test", min_entries=4, max_entries=4)
         correct_choice=IntegerField('Correct choice index number', validators=[DataRequired()])
-        image_link=StringField(label='IMAGE URL', validators=[DataRequired(),URL(),
-                                                              lambda x:x.endswith(('png','jpeg','jpg'))])
+        image_link=StringField(label='IMAGE URL', validators=[DataRequired(),URL()])
         question_layout=RadioField('Layout ', choices=[('above','Image above question'), ('side','Image on the side of the question')])
         submit=SubmitField('Submit')
 
 class PictureMultipleChoicesForm(FlaskForm):
         choices=FieldList(StringField(label='Choice', validators=[DataRequired()]),label='Choices',min_entries=4,max_entries=4)
         correct_choices=IntegerField('Correct choice index',validators=[DataRequired()])
-        image_link=StringField(label='IMAGE URL', validators=[DataRequired(), URL(), lambda x:x.endswith(('png','jpeg','jpg'))])
+        image_link=StringField(label='IMAGE URL', validators=[DataRequired(), URL()])
         question_layout=RadioField('Layout ', choices=[('above','Image above question'), ('side','Image on the side of the question')])
         submit=SubmitField('Submit')
 
@@ -176,15 +160,9 @@ class FillInOneBlank(FlaskForm):
         submit=SubmitField("Submit")
 
 class FillinTheBlanks(FlaskForm):
-        sentence=StringField("What is the sentence? (Please indicate the blank with two consecutive '$' signs)",validators=[DataRequired()])
+        sentence=StringField("What is the sentence? (Please indicate the blank with a $$ signs)",validators=[DataRequired()])
         blank=FieldList(StringField("What is the correct blank/answer according to the order?",
-                                    validators=[DataRequired()]), label="Blanks", min_entries=5, max_entries=7)
-        submit=SubmitField('Submit')
-
-class Dropdown(FlaskForm):
-        choices=FieldList(StringField(label='Choice', validators=[DataRequired()]),
-                          label='Dropdown choices', min_entries=4,max_entries=4)
-        correct_choice=IntegerField('Correct choice index number',validators=[DataRequired()])
+                                    validators=[DataRequired()]), label="Blanks", min_entries=3, max_entries=3)
         submit=SubmitField('Submit')
 
 class FileUpload(FlaskForm):
@@ -262,10 +240,6 @@ def create_form():
                     return redirect("/forms/fiob")
                 elif form.question_type.data == "fitbs":
                     return redirect("/forms/fitb")
-                elif form.question_type.data == "drpdwn":
-                    return redirect("/forms/drpdwn")
-                elif form.question_type.data == "upl":
-                    return redirect("/forms/upl")
                 else:
                     return redirect('/forms/create-new')
         return render_template('create-form.html', form=form)
@@ -316,24 +290,24 @@ def create_pmcq():
                 choices=[x for x in choices if x.strip()]
                 if correct>len(choices):
                         flash("Correct choice not within bounds")
-                elif len(choices)==1:
-                        flash("Only one unique choice exists!")
+                #elif len(choices)==1:
+                #        flash("Only one unique choice exists!")
                 else:
                         details_dict.update({'choices':choices,'correct':correct,'image_link':imagelink,'layout':layout})
                         return redirect('/forms/create-new')
-        return render_template('mcq.html',form=choiceform)
+        return render_template('pmcq.html',form=choiceform)
 
 @app.route("/forms/pma",methods=['GET','POST'])
 def create_pma():
         global details_dict
         choiceform=PictureMultipleChoicesForm()
         if choiceform.validate_on_submit():
-                correct_choices=choiceform.correct_choices.entries
-                choices=choiceform.choices.data
+                correct_choices=choiceform.correct_choices
+                choices=[choiceform.choices.data]
                 image_link=choiceform.image_link.data
                 layout=choiceform.question_layout.data
                 choices=[x for x in choices if x.strip()]
-                if len(choices)==0 or len(choices)==1:
+                if len(choices)==0:
                         flash("Please enter more than one unique choice.")
                 if len(correct_choices)>len(choices):
                         flash("There are more correct choices than the choices!")
@@ -361,9 +335,9 @@ def create_FIOB():
         if choiceform.validate_on_submit():
                 sentence=choiceform.sentence.data
                 blank=choiceform.blank.data
-                if "$$" not in sentence:
+                if "__" not in sentence:
                         flash("There is no blank present in the sentence")
-                elif sentence.count("$$")>1:
+                elif sentence.count("__")>1:
                         flash("Only one blank is needed!")
                 details_dict.update({'sentence':sentence,'blank':blank})
                 return redirect('/forms/create-new')
@@ -378,28 +352,11 @@ def create_FITB():
                 if "$$" not in sentence:
                         flash("There is no blank present in the sentence")
                 elif len(blank)!=sentence.count("$$"):
+                        print()
                         flash("Something is wrong with the number of blanks or sentence")
                 details_dict.update({'sentence':sentence,'blank':blank})
                 return redirect('/forms/create-new')
         return render_template('FIOB.html',form=choiceform)
-
-@app.route('/forms/dd',methods=['GET','POST'])
-def create_dd():
-        choiceform=Dropdown()
-        if choiceform.validate_on_submit():
-                rawchoices=choiceform.choices.data
-                choices=[]
-                for choice in rawchoices:
-                        if choice not in choices:
-                                choices.append(choice.strip())
-                correct_choice=choiceform.correct_choice.data-1
-                if correct_choice>len(choices):
-                        flash("You've entered an incorrect index for the correct choice")
-                elif correct_choice<0:
-                        flash("Positive indexes only.")
-                details_dict.update({'choices':choices,'correct':correct_choice})
-                return redirect('/forms/create-new')
-        return render_template('MCQ.html',form=choiceform)
 
 @app.route('/forms/upload',methods=['GET','POST'])
 def create_upload():
@@ -433,8 +390,6 @@ def next_question():
     if OneMore.is_submitted():
         q_list.append(details_dict)
         print(details_dict)
-        #print("hi")
-        #print(strOneMore.yesonemore.data)
         if OneMore.yesonemore.data == 'True':
             print("redirect to create" + str(OneMore.yesonemore.data))
             return redirect('/forms/create')
