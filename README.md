@@ -6,8 +6,16 @@ $ flask routes
 Endpoint       Methods    Rule
 -------------  ---------  -----------------------
 add_user       GET, POST  /user/add
+create_FIOB    GET, POST  /forms/fiob
+create_FITB    GET, POST  /forms/fitb
+create_dd      GET, POST  /forms/dd
 create_form    GET, POST  /forms/create
+create_likert  GET, POST  /forms/likert
+create_ma      GET, POST  /forms/ma
 create_mcq     GET, POST  /forms/create-mcq
+create_pma     GET, POST  /forms/pma
+create_pmcq    GET, POST  /forms/pmcq
+create_upload  GET, POST  /forms/upload
 dashboard      GET, POST  /dashboard
 delete         GET        /delete/<int:id>
 edit_form      GET        /forms/edit/<hash>
