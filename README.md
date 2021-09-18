@@ -9,6 +9,8 @@ Formcreationapp
 4. Test are stored in Json Format and can be shared in json format.
 5. Forms can be shared in link in jsonformat
 
+## Please visit the below Youtube Video Link for demonstration. 
+https://www.youtube.com/watch?v=bmmO7ZEoQe0
 
 ## Installation
 
@@ -25,7 +27,6 @@ Endpoint       Methods    Rule
 add_user       GET, POST  /user/add
 create_FIOB    GET, POST  /forms/fiob
 create_FITB    GET, POST  /forms/fitb
-create_dd      GET, POST  /forms/dd
 create_form    GET, POST  /forms/create
 create_likert  GET, POST  /forms/likert
 create_ma      GET, POST  /forms/ma
